@@ -254,8 +254,7 @@ bearing @docker[docker instances] running somewhere independently of the network
   #pagebreak()
   === Suggested project structure <sec:suggested-project-structure>
 
-  Naming and folder structure conventions are wholly up to the operator as suggested @import-tree usage is not distriminatory. Still, using nix-idiomatic `default.nix` and sub-folder structures in direct relation with @flake-module patterns is suggested.
-
+  Naming and folder structure conventions are wholly up to the operator as @import-tree is not distriminatory; any `.nix` file under module is fair-game. Still, using nix-idiomatic `default.nix` and sub-folder structures in direct relation with @flake-module patterns is recommended.
 
   For best useability, these modules would be defined in separate files, but the could also be defined in-place anywhere in `./modules/**/*.nix`:
   #zebraw(numbering: false)[
@@ -279,7 +278,7 @@ bearing @docker[docker instances] running somewhere independently of the network
           automount-open = false;
         };
       };
-    };
+     };
     ```
   ]
 
@@ -328,12 +327,13 @@ bearing @docker[docker instances] running somewhere independently of the network
   #pagebreak()
 
   === Excluded .nix files <sec:excluded-nix-files>
-  In rare circumstances where you don't want `*.nix` files under `./modules` to be implicitly loaded as @flake-module[`flake-modules`], follow naming convention where  `_*.nix` gets skipped automatically by @import-tree[`import-tree`].
+  In rare circumstances where you don't want `*.nix` files under `./modules` to be implicitly loaded as @flake-module[`flake-modules`], we recommend the operator to follow naming conventions where `_*.nix` already automatically gets skipped by @import-tree[`import-tree`].
 
-  Preferably, for cases of stand-alone `.nix` files, use top-root directories outside of `./modules` instead, such as `./lib`, where applicable.
+  For cases where `.nix` files—for usability outside a @flake-module pattern—use top-root directories outside of `./modules` instead, such as `./lib`, or wherever is most applicable.
 
   #block(breakable: false)[
-    *References as initial source of @dendritic-pattern:pl:*
+    *References as initial originators of @dendritic-pattern:pl:*
+    This is a non-exhaustive list of the posts, repositories and discussions where the @dendritic-pattern where first established [_sic_].
 
     #cite_atyp(<dendritic-implementation>)
 
