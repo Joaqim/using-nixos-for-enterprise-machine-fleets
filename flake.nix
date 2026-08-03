@@ -24,6 +24,7 @@
             zebraw
             tdtr
             tidymind
+            dtree
             cetz_0_3_4
             oxifmt
           ]

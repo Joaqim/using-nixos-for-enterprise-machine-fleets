@@ -14,7 +14,10 @@ docker:
   short: docker
 configuration:
   short: configuration
-  description: Can refer to NixOS-, home-manager or flake configuration
+  description: Refers to NixOS-, home-manager or flake configuration
+options:
+  short: options
+  description: Refers to top-level `options` attribute in a nix module system
 host: 
   short: host
   description: Refers to machine-specific configurations and deployments
@@ -25,6 +28,8 @@ import-list:
 module:
   short: module
   description: Refers to NixOS-, home-manager- or flake modules
+nix-module-system:
+  short: nix module system
 flake-parts:
   short: flake-parts
 flake-nix:

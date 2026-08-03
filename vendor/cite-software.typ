@@ -39,3 +39,6 @@
 ```.text
 
 #let cite_software(key, ..args) = cite(key, style: bytes(title_note_italic_csl), ..args) // *Some Software*: <a note describing it>
+
+// Identical to cite_software
+#let cite_title(key, ..args) = cite(key, style: bytes(title_note_italic_csl), ..args) // *Some Software*: <a note describing it>

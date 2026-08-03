@@ -5,11 +5,24 @@
 #import "@preview/conch:0.1.0": system, terminal, terminal-block, terminal-frame
 #import "@preview/tdtr:0.6.1": *
 #import "@preview/tidymind:0.1.1": mindmap, node
+#import "@preview/dtree:0.1.1": dtree
+
+#let nix-icon = read("assets/Nix_snowflake.svg", encoding: none);
+#let folder-icon = "📁"
+#let secrets-icon = "🔒"
+#let dtree-icons = (
+  "nix": nix-icon,
+  "dir": folder-icon,
+)
+#let dtree-icon-rules = (
+  (regex("/$"), "dir"),
+  ("*.nix", (icon: "nix", fill: blue)),
+)
 
 // https://typst.app/universe/package/timeliney
 
 #import "vendor/extend-citation.typ": *
-#import "vendor/cite-software.typ": cite_software
+#import "vendor/cite-software.typ": cite_software, cite_title
 
 #show: init-glossary.with(yaml("glossary.yaml"))
 
@@ -41,8 +54,6 @@ bearing @docker[docker instances] running somewhere independently of the network
 
 == Paper overview
 
-// This paper does not seek to explain the @nixos ecosystem
-
 //
 
 #pagebreak()
@@ -58,7 +69,32 @@ bearing @docker[docker instances] running somewhere independently of the network
   #pagebreak()
   = Nix module system <sec:nix-modules>
 
+  For a simple introduction to @nix-module-system, see: #cite_title(<nixdev:a-basic-module>)
+
   /* Description of Nix module system with common patterns */
+  #quote(attribution: [#cite_atyp(<nixdev:a-basic-module>)])[
+    The simplest possible module is a function that takes any attributes and returns an empty attribute set:
+  ]
+
+  ```nix
+  { ... }:
+  {
+  }
+  ```
+  For the purposes of this paper, a @flake-module would then look like:
+  ```nix
+  { ... }: {
+    flake.modules.nixos.my-module = { ... } = {
+
+    }
+  }
+  ```
+  Which would equate to an empty @nixos module, see
+
+
+  == Project structure
+
+  We utilize @dendritic-pattern and @flake-parts with @flake-module:pl, see @sec:dendritic-pattern.
 
 
   == Clan
@@ -137,7 +173,7 @@ bearing @docker[docker instances] running somewhere independently of the network
 
   #pagebreak()
   /* More advanced and opinionated example */
-  == Dendritic pattern
+  == Dendritic pattern <sec:dendritic-pattern>
   The @dendritic-pattern composes a @flake from many small @flake-parts @module:pl with no manual import lists.
   The following examples are taken from #cite_atyp(<vanixiets>) project, which combines @deferred-module-composition patterns with first-class support for @clan @module:pl and related @cli[tools].
 
@@ -213,11 +249,13 @@ bearing @docker[docker instances] running somewhere independently of the network
     ```,
   ) <code:host-desktop>
 
-  #figure(
-    caption: [Tree graph of @import-tree[`import-tree`] relations],
-  )[
-    #tidy-tree-graph(json("tree.json"))
-  ]
+
+
+  #pagebreak()
+  === Suggested project structure <sec:suggested-project-structure>
+
+  Naming and folder structure conventions are wholly up to the operator as suggested @import-tree usage is not distriminatory. Still, using nix-idiomatic `default.nix` and sub-folder structures in direct relation with @flake-module patterns is suggested.
+
 
   For best useability, these modules would be defined in separate files, but the could also be defined in-place anywhere in `./modules/**/*.nix`:
   #zebraw(numbering: false)[
@@ -233,8 +271,8 @@ bearing @docker[docker instances] running somewhere independently of the network
      flake.modules.homeManager."gnome" = {config, ... }: {
        config.gnome.enable = true;
      };
-     # modules/home/users/user1/default.nix
-     flake.modules.homeManager.users."user1" = {config, ...}: {
+     # modules/home/users/user1/gnome.nix
+     flake.modules.homeManager.users."user1" = {config, ... }: {
       config.dconf.settings = {
         "org/gnome/desktop/media-handling" = {
           automount = false;
@@ -245,6 +283,51 @@ bearing @docker[docker instances] running somewhere independently of the network
     ```
   ]
 
+  === File tree example <sec:file-tree-example>
+
+  #block(breakable: false)[
+    #dtree(
+      icons: dtree-icons,
+      icon-rules: dtree-icon-rules,
+      ```
+      flake.nix
+      modules/
+        machines/nixos/
+          workstation/
+            default.nix
+          server-1/
+            default.nix
+        nixos/
+          gnome/
+            default.nix
+          ssh/
+            default.nix
+        home/
+          users/
+            user1/
+              default.nix
+              gnome.nix
+            admin/
+              default.nix
+              ssh.nix
+          gnome/
+            default.nix
+          terminal/
+            default.nix
+      ```,
+    )
+  ]
+
+  === Tree graph example <sec:tree-graph-example>
+  #figure(
+    caption: [Example of a tree graph of @import-tree[`import-tree`] imports and @nix[nix-evaluated] relations.],
+  )[
+    #tidy-tree-graph(json("tree.json"))
+  ]
+
+  #pagebreak()
+
+  === Excluded .nix files <sec:excluded-nix-files>
   In rare circumstances where you don't want `*.nix` files under `./modules` to be implicitly loaded as @flake-module[`flake-modules`], follow naming convention where  `_*.nix` gets skipped automatically by @import-tree[`import-tree`].
 
   Preferably, for cases of stand-alone `.nix` files, use top-root directories outside of `./modules` instead, such as `./lib`, where applicable.
