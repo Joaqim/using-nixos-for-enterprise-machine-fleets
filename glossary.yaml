@@ -1,0 +1,73 @@
+nixos:
+  short: NixOS
+nixpkgs:
+  short: nixpkgs
+package-manager:
+  short: package manager
+package:
+  short: package
+functional-language:
+  short: functional language
+meta-framework:
+  short: meta-framework
+docker:
+  short: docker
+configuration:
+  short: configuration
+  description: Can refer to NixOS-, home-manager or flake configuration
+host: 
+  short: host
+  description: Refers to machine-specific configurations and deployments
+barrel-file:
+  short: barrel file
+import-list:
+  short: import list
+module:
+  short: module
+  description: Refers to NixOS-, home-manager- or flake modules
+flake-parts:
+  short: flake-parts
+flake-nix:
+  short: flake.nix
+flake:
+  short: flake
+flake-module:
+  short: flake-module
+import-tree:
+  short: import-tree
+per-host:
+  short: per-host
+  see: Refers to per-machine configurations, rather than anything fleet- or user-wide
+nixos-conf:
+  short: NixOS configuration
+hm-conf:
+  short: home-manager configuration
+dendritic-pattern:
+  short: dendritic pattern
+  description: A Nix module system usage pattern
+llm-assisted:
+  short: LLM-assisted
+llm:
+  short: LLM
+  long: Large language model
+vibe-coding:
+  short: vibe-coding
+ssh:
+  short: SSH
+root:
+  short: root
+vcs:
+  short: VCS
+  long: version-controlled source
+clan:
+  short: Clan
+  description: Clan is a declarative framework for reliable, self-hosted computing
+cli:
+  short: CLI
+  long: command-line interface
+ad-hoc: 
+  short: ad-hoc
+deferred-module-composition:
+  short: defered module composition
+nix:
+  short: nix

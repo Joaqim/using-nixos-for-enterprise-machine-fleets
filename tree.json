@@ -1,0 +1,38 @@
+{
+    "flake": {
+        "modules": {
+            "nixos": {
+                "machines": {
+                	"workstation": {
+                    "gnome": {},
+                    "home-manager": {
+                      "terminal": {},
+                      "gnome": {},
+                      "users": {
+                        "user1": {"gnome-conf": {}}
+                      }
+                    }
+                  },
+                 "server-1": {
+                   "matrix": {},
+                   "users": {"admin": {"ssh": {}}}
+                  }
+                },
+              "gnome": {},
+              "matrix": {}
+            },
+          "homeManager": {
+            "terminal": {},
+            "gnome": {},
+            "users": {
+              "user1": {
+                "gnome-conf": {}
+              },
+              "admin": {
+                "ssh": {}
+              }
+            }
+          }
+        }
+    }
+}
