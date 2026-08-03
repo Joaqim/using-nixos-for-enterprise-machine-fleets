@@ -136,7 +136,7 @@ bearing @docker[docker instances] running somewhere independently of the network
   ]
 
   #pagebreak()
-  /* More advanced and opinonated example */
+  /* More advanced and opinionated example */
   == Dendritic pattern
   The @dendritic-pattern composes a @flake from many small @flake-parts @module:pl with no manual import lists.
   The following examples are taken from #cite_atyp(<vanixiets>) project, which combines @deferred-module-composition patterns with first-class support for @clan @module:pl and related @cli[tools].

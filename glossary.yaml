@@ -68,6 +68,6 @@ cli:
 ad-hoc: 
   short: ad-hoc
 deferred-module-composition:
-  short: defered module composition
+  short: deferred module composition
 nix:
   short: nix
