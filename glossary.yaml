@@ -1,17 +1,24 @@
 nixos:
   short: NixOS
+  description: Is a Linux OS built around the Nix package manager. Allows for declarative system deployments.
 nixpkgs:
   short: nixpkgs
+  description: Is a large repository of cross-platform packages for Unix-like systems, primarily used by Nix package manager.
 package-manager:
   short: package manager
+  description: Is a software that supports installing, upgrading and configuring software for a host system.
 package:
   short: package
+  description: A packaged distribution of a software, often containing manifest and source code for use in a package manager.
 functional-language:
   short: functional language
+  description: Is a declarative programming structure where the output is a combination of all declared statements, rather than a sequence.
 meta-framework:
   short: meta-framework
+  description: Is a higher-level implementation of existing frameworks, allowing for opinionated abstractions and extensions.
 docker:
   short: docker
+  description: Is a set of software that allows for OS virtualization to create consistent deployments on a wide variety of machines.
 configuration:
   short: configuration
   description: Refers to NixOS-, home-manager or flake configuration
@@ -23,56 +30,78 @@ host:
   description: Refers to machine-specific configurations and deployments
 barrel-file:
   short: barrel file
+  description: Is a file that consolidates and sometimes re-exports files of one or more directories.
 import-list:
   short: import list
+  description: As in Nix modules, allows for discovery and evaluation of nix module source files and definitions.
 module:
   short: module
   description: Refers to NixOS-, home-manager- or flake modules
 nix-module-system:
   short: nix module system
+  description: Allows for declarative configuration where multiple modules can be evaluated to create a full system configuration.
 flake-parts:
   short: flake-parts
+  description: A minimal framework that allows for greater module flexibility using "flake modules", on step removed from ordinary nix modules.
 flake-nix:
   short: flake.nix
+  description: Provides a uniform structure for Nix projects, defining external inputs and internal outputs.
 flake:
   short: flake
+  description: Provides a standard way to write Nix expressions whose dependencies are version-pinned in a lock file, improving reproducibility.
 flake-module:
   short: flake-module
+  description: A feature of using `flake-parts`, allows for writing reusable and extensible modules that act on flakes.
 import-tree:
   short: import-tree
+  description: A function that recursively imports Nix files from a directory tree.
 per-host:
   short: per-host
-  see: Refers to per-machine configurations, rather than anything fleet- or user-wide
+  description: Refers to per-machine configurations, rather than anything fleet- or user-wide
 nixos-conf:
   short: NixOS configuration
+  description: Using Nix and Nixpkgs to achieve a declarative model to manage system deployments.
 hm-conf:
   short: home-manager configuration
+  description: An extension to NixOS that allows for declarative control on a per-user basis, rather than at system level.
 dendritic-pattern:
   short: dendritic pattern
   description: A Nix module system usage pattern
 llm-assisted:
   short: LLM-assisted
+  description: Usage of LLM to auto-complete code. Extent of usage can vary, see `vibe-coding`
+  see: vibe-coding
 llm:
   short: LLM
   long: Large language model
+  description: Is a type of machine learning that excel in language generation.
 vibe-coding:
   short: vibe-coding
+  description: Is software development assisted by AI where the software developer inputs prompts to a LLM which generates code.
 ssh:
   short: SSH
+  long:  Secure Shell Protocol 
+  description: Is a cryptographic network protocol for operating network services securely over an unsecured network.
 root:
   short: root
+  description: Is a special user account used for system administration.
 vcs:
   short: VCS
   long: version-controlled source
+  description: Is the software engineering practice of controlling, organizing, and tracking different versions in history of computer files – primarily source code text files, but generally any type of file.
 clan:
   short: Clan
   description: Clan is a declarative framework for reliable, self-hosted computing
 cli:
   short: CLI
   long: command-line interface
+  description: Is a means of interacting with software via commands – each formatted as a line of text.
 ad-hoc: 
-  short: ad-hoc
+  short: ad hoc
+  description: Is sometimes used informally to describe improvised or makeshift solutions, emphasizing their temporary nature and specific applicability to immediate circumstances.
 deferred-module-composition:
   short: deferred module composition
+  description: Deferred—as in, not instantiated—Nix module, is a pattern where the declaration of Nix modules are primarily driven by intent, any abstractions are driven by aspect, rather than form-fitting structure.
 nix:
   short: nix
+  description: Is a cross-platform package-manager for Unix-like systems and a functional programming language for those systems.
