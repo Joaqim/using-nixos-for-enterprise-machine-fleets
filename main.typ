@@ -84,190 +84,81 @@ bearing @docker[docker instances] running somewhere independently of the network
   For the purposes of this paper, @flake-module:pl can look like this:
   ```nix
   { ... }: {
-    flake.modules.nixos.my-module = { ... } = {
-
-    }
-  }
+    # A NixOS module for a custom systemd service
+    flake.modules.nixos.my-service = { config, lib, ... }:
+      let
+        cfg = config.services.my-service;
+      in
+    {
+      options.services.my-service = {
+        enable = lib.mkEnableOption "my custom service";
+      };
+      config = lib.mkIf cfg.enable {
+        systemd.user.services.my-service = {
+          description = "my custom service";
+          wantedBy = [ "default.target" ];
+          serviceConfig.ExecStart = lib.getExe pkgs.my-package;
+        };
+      };
+    };
   ```
-  Which would equate to an empty @nixos module, see
+  #zebraw(numbering: false)[
+    A @darwin (@macos) @module—out of scope for this paper.
+    ```nix
+      {...}: {
+        flake.modules.darwin.my-module = { ... }: {
+        };
+      }
+    ```
+    A @home-manager @module
+    ```nix
+      {...}: {
+        flake.modules.home.my-module = { ... }: {
+        };
+      }
+    ```
+    A @flake-module
+    ```nix
+      {...}: {
+        # A flake module
+        flake.modules.flake.my-module = { ... }: {
+        };
+      }
+    ```
+  ]
 
+  The naming choice should be driven by aspect rather than conforming to established patterns, see @deferred-module-composition.
+
+  #block(breakable: false)[
+    For more in-depth guides:
+    - #cite_t(<nixdev:a-basic-module>)
+    - #cite_t(<nlewo:nixos-manual:writing-nixos-modules>)
+  ]
 
   == Project structure
 
   We utilize @dendritic-pattern and @flake-parts with @flake-module:pl, see @sec:dendritic-pattern.
 
+  Naming and folder structure conventions are wholly up to the operator as @import-tree is not distriminatory; any `.nix` file under assigned import directory will be implicitly supported, unless otherwise excluded, see @sec:excluded-nix-files.
 
-  == Clan
+  We recommend using nix-idiomatic `default.nix` and sub-folder structures in direct relation with @flake-module patterns.
 
-  #cite_t(<clan-core>) is a @nix @module framework and @cli that uses a @meta-framework to accomplish intrinsically linked machines while still maintaining @per-host deployments.
-  /*
-  #block(breakable: false)[
-    #terminal-block( width: 100%,
-      system: system(files: (
-        "flake.nix": read("examples/flake.nix"),
-        "modules/nixpkgs/default.nix": read("examples/modules/nixpkgs/default.nix")
-        ,
-      ),hostname: "workstation"),
-      user: "user",
-    )[```
-    tree
-    ```]
-  ]*/
+  @nix draws no distinction between unquoted and quoted attributes;
+  `flake.modules.<class>.<name>` and `flake.modules.<class>."<name>"` are equivalent.
 
-  === Clan secrets
+  We recommend using quoted attributes where the attribute root would be semantically equivalent to `flake.modules.class."<name>".name = "<name>"`, see `"user1"` in examples below.
 
-  #cite_t(<clan-core>) has built-in support for secrets management, @per-host or shared secrets.
-
-  For more in-depth guide, see #cite_t(<docs:clan-core>).
-
-  #block(breakable: false)[
-    ```nix
-    clan.core.vars.generators = {
-      authelia-jwt-secret = {
-        files."jwt-secret" = {
-          neededFor = "services";
-          owner = "authelia-main";
-        };
-        runtimeInputs = [ pkgs.openssl ];
-        script = ''
-          openssl rand -hex 32 > "$out"/jwt-secret
-        '';
-      };
-    }
-    ```
-
-    ```nix
-    services.authelia = {
-      enable = true;
-      secrets = {
-        jwtSecretFile = config.clan.core.vars.generators."authelia-jwt-secret".files."jwt-secret".path;
-      };
-    };
-
-    ```
-  ]
-
-  #block(breakable: false)[
-    We can also have secrets with prompt for input at deployment time:
-    ```nix
-    authelia-smtp-password = {
-      files."password" = {
-        neededFor = "services";
-        owner = "authelia-main";
-      };
-      prompts."password" = {
-        description = "SMTP relay password";
-        type = "hidden";
-      };
-      script = ''cat "$prompts"/password > "$out"/password'';
-    };
-    ```
-
-    #terminal-frame(width: 100%)[
-      \$ clan vars generate workstation\ \
-      Prompting value for authelia-smtp-password/password for machines: workstation\
-      Leave empty to generate automatically (hidden):\
-      Confirm Leave empty to generate automatically (hidden):\
-    ]
-  ]
-
-  #pagebreak()
-  /* More advanced and opinionated example */
-  == Dendritic pattern <sec:dendritic-pattern>
-  The @dendritic-pattern composes a @flake from many small @flake-parts @module:pl with no manual import lists.
-  The following examples are taken from #cite_atyp(<vanixiets>) project, which combines @deferred-module-composition patterns with first-class support for @clan @module:pl and related @cli[tools].
-
-
-  @flake-nix is a thin trunk:
-  #raw(read("examples/flake.nix"), lang: "nix", block: true)
-
-  ```nix import-tree ./modules``` walks the directory and returns a @flake-parts module whose effect is ```nix { imports = [ ...every discovered .nix... ]; }```.
-
-  @flake-parts loads that list with: ```nix lib.evalModules { class = "flake"; ... }```, so all discovered files merge into one module-system.
-
-  #block(breakable: false)[
-    Adding a new module or configuration means creating a `.nix` file anywhere inside `modules/*`; there are no @import-list:pl or @barrel-file:pl to maintain.
-
-    // #raw(read("examples/modules/nixpkgs/base-defaults.nix"), lang: "nix", block: true)
-
-    This is a minimally viable `modules.nixos` definition:
-    ```nix
-    { inputs, ... }:
-    {
-      flake.modules.nixos.alexandria = inputs.alexandria.nixosModules.default;
-    }
-    ```
-
-    See @nixos-conf for @host @code:host-desktop[`desktop`] where #cite_t(<alexandria>) @module is imported on a @per-host basis.
-  ]
-
-  #block(breakable: false)[
-    More advanced example, which include pre-configured options:
-    ```nix
-    { inputs, ... }:
-    {
-      flake.modules.nixos.pixelstreaming =
-        { pkgs, ... }:
-        {
-          imports = [ inputs.pixelstreaming.nixosModules.default ];
-          services.pixelstreaming-signaller = {
-            enable = true;
-            playerPort = 8080;
-            streamerPort = 8888;
-            openFirewall = true;
-          };
-        };
-    }
-    ```
-  ]
-
-  And for @per-host inclusion:
-  #figure(
-    ```nix
-    {
-      flake.modules.nixos."machines/nixos/desktop" =
-        {
-          config,
-          pkgs,
-          lib,
-          ...
-        }:
-        {
-          imports = (with config.flake.module.nixos; [
-            alexandria
-            pixelstreaming
-          ]);
-
-          # Since our minimal alexandria module doesn't have any configuration
-          # let's declare it here
-          services.alexandria.enable = true;
-
-          # Optionally, we can also override our own module defaults
-          services.pixelstreaming-signaller.openFirewall = lib.mkForce false;
-        };
-    }
-    ```,
-  ) <code:host-desktop>
-
-
-
-  #pagebreak()
-  === Suggested project structure <sec:suggested-project-structure>
-
-  Naming and folder structure conventions are wholly up to the operator as @import-tree is not distriminatory; any `.nix` file under module is fair-game. Still, using nix-idiomatic `default.nix` and sub-folder structures in direct relation with @flake-module patterns is recommended.
-
-  For best useability, these modules would be defined in separate files, but the could also be defined in-place anywhere in `./modules/**/*.nix`:
   #zebraw(numbering: false)[
     ```nix
      # modules/nixos/gnome/default.nix
-     flake.modules.nixos."gnome" = {config, ... }:
+     flake.modules.nixos.gnome = {config, ... }:
       config = {
         services.desktopManager.gnome.enable = true;
         services.displayManager.gdm.enable = true;
       };
      };
      # modules/home/gnome/default.nix
-     flake.modules.homeManager."gnome" = {config, ... }: {
+     flake.modules.homeManager.gnome = {config, ... }: {
        config.gnome.enable = true;
      };
      # modules/home/users/user1/gnome.nix
@@ -282,77 +173,218 @@ bearing @docker[docker instances] running somewhere independently of the network
     ```
   ]
 
-  === File tree example <sec:file-tree-example>
-
-  #block(breakable: false)[
-    #dtree(
-      icons: dtree-icons,
-      icon-rules: dtree-icon-rules,
-      ```
-      flake.nix
-      modules/
-        machines/nixos/
-          workstation/
-            default.nix
-          server-1/
-            default.nix
-        nixos/
-          gnome/
-            default.nix
-          ssh/
-            default.nix
-        home/
-          users/
-            user1/
-              default.nix
-              gnome.nix
-            admin/
-              default.nix
-              ssh.nix
-          gnome/
-            default.nix
-          terminal/
-            default.nix
-      ```,
-    )
-  ]
-
-  === Tree graph example <sec:tree-graph-example>
-  #figure(
-    caption: [Example of a tree graph of @import-tree[`import-tree`] imports and @nix[nix-evaluated] relations.],
-  )[
-    #tidy-tree-graph(json("tree.json"))
-  ]
-
   #pagebreak()
 
-  === Excluded .nix files <sec:excluded-nix-files>
-  In rare circumstances where you don't want `*.nix` files under `./modules` to be implicitly loaded as @flake-module[`flake-modules`], we recommend the operator to follow naming conventions where `_*.nix` already automatically gets skipped by @import-tree[`import-tree`].
+  This is a minimally viable `modules.nixos` definition, using externally defined @nix-module, which is a @flake-input:
+  ```nix
+  { inputs, ... }:
+  {
+    flake.modules.nixos.alexandria = inputs.alexandria.nixosModules.default;
+  }
+  ```
 
-  For cases where `.nix` files—for usability outside a @flake-module pattern—use top-root directories outside of `./modules` instead, such as `./lib`, or wherever is most applicable.
+  See @nixos-conf for @host @code:host-desktop[`desktop`] where #cite_t(<alexandria>) @module is imported on a @per-host basis.
+]
 
-  #block(breakable: false)[
-    *References as initial originators of @dendritic-pattern:pl:*
-    This is a non-exhaustive list of the posts, repositories and discussions where the @dendritic-pattern where first established [_sic_].
+#block(breakable: false)[
+  More advanced example, which include pre-configured options:
+  ```nix
+  { inputs, ... }:
+  {
+    flake.modules.nixos.pixelstreaming =
+      { pkgs, ... }:
+      {
+        imports = [ inputs.pixelstreaming.nixosModules.default ];
+        services.pixelstreaming-signaller = {
+          enable = true;
+          playerPort = 8080;
+          streamerPort = 8888;
+          openFirewall = true;
+        };
+      };
+  }
+  ```
+]
 
-    #cite_atyp(<dendritic-implementation>)
+And for @per-host inclusion:
+#figure(
+  ```nix
+  {
+    flake.modules.nixos."machines/nixos/desktop" =
+      {
+        config,
+        pkgs,
+        lib,
+        ...
+      }:
+      {
+        imports = (with config.flake.module.nixos; [
+          alexandria
+          pixelstreaming
+        ]);
 
-    #cite_atyp(<refactoring-my-infrastructure-as-code-configurations>)
+        # Since our minimal alexandria module doesn't have any configuration
+        # let's declare it here
+        services.alexandria.enable = true;
 
-    #cite_atyp(<the-dendritic-pattern>)
+        # Optionally, we can also override our own module defaults
+        services.pixelstreaming-signaller.openFirewall = lib.mkForce false;
+      };
+  }
+  ```,
+) <code:host-desktop>
+
+=== File tree example <sec:file-tree-example>
+
+#block(breakable: false)[
+  #dtree(
+    icons: dtree-icons,
+    icon-rules: dtree-icon-rules,
+    ```
+    flake.nix
+    modules/
+      machines/nixos/
+        workstation/
+          default.nix
+        server-1/
+          default.nix
+      nixos/
+        gnome/
+          default.nix
+        ssh/
+          default.nix
+      home/
+        users/
+          user1/
+            default.nix
+            gnome.nix
+          admin/
+            default.nix
+            ssh.nix
+        gnome/
+          default.nix
+        terminal/
+          default.nix
+    ```,
+  )
+]
+
+=== Tree graph example <sec:tree-graph-example>
+#figure(
+  caption: [Example of a tree graph of @import-tree[`import-tree`] imports and @nix[nix-evaluated] relations.],
+)[
+  #tidy-tree-graph(json("tree.json"))
+]
+
+#pagebreak()
+
+== Clan
+
+#cite_t(<clan-core>) is a @nix @module framework and @cli that uses a @meta-framework to accomplish intrinsically linked machines while still maintaining @per-host deployments.
+/*
+#block(breakable: false)[
+  #terminal-block( width: 100%,
+    system: system(files: (
+      "flake.nix": read("examples/flake.nix"),
+      "modules/nixpkgs/default.nix": read("examples/modules/nixpkgs/default.nix")
+      ,
+    ),hostname: "workstation"),
+    user: "user",
+  )[```
+  tree
+  ```]
+]*/
+
+=== Clan secrets
+
+#cite_t(<clan-core>) has built-in support for secrets management, @per-host or shared secrets.
+
+For more in-depth guide, see #cite_t(<docs:clan-core>).
+
+#block(breakable: false)[
+  ```nix
+  clan.core.vars.generators = {
+    authelia-jwt-secret = {
+      files."jwt-secret" = {
+        neededFor = "services";
+        owner = "authelia-main";
+      };
+      runtimeInputs = [ pkgs.openssl ];
+      script = ''
+        openssl rand -hex 32 > "$out"/jwt-secret
+      '';
+    };
+  }
+  ```
+
+  ```nix
+  services.authelia = {
+    enable = true;
+    secrets = {
+      jwtSecretFile = config.clan.core.vars.generators."authelia-jwt-secret".files."jwt-secret".path;
+    };
+  };
+
+  ```
+]
+
+#block(breakable: false)[
+  We can also have secrets with prompt for input at deployment time:
+  ```nix
+  authelia-smtp-password = {
+    files."password" = {
+      neededFor = "services";
+      owner = "authelia-main";
+    };
+    prompts."password" = {
+      description = "SMTP relay password";
+      type = "hidden";
+    };
+    script = ''cat "$prompts"/password > "$out"/password'';
+  };
+  ```
+
+  #terminal-frame(width: 100%)[
+    \$ clan vars generate workstation\ \
+    Prompting value for authelia-smtp-password/password for machines: workstation\
+    Leave empty to generate automatically (hidden):\
+    Confirm Leave empty to generate automatically (hidden):\
   ]
+]
+
+#pagebreak()
+/* More advanced and opinionated example */
+== Dendritic pattern <sec:dendritic-pattern>
+The @dendritic-pattern composes a @flake from many small @flake-parts @module:pl with no manual import lists.
+The following examples are taken from #cite_atyp(<vanixiets>) project, which combines @deferred-module-composition patterns with first-class support for @clan @module:pl and related @cli[tools].
 
 
-  /*
-  #mindmap(
-    node([Order is Packed],
-    node([Purchase Label for Shipping],
-    [Add Tracking information],
-    [Upload ZPL/PDF Label to Order]
-    ),
-    node([Create new Parcel for Order]),
-    node([#strike[Update existing Parcel]])
-    ),
-  )*/
+@flake-nix is a thin trunk:
+#raw(read("examples/flake.nix"), lang: "nix", block: true)
+
+```nix import-tree ./modules``` walks the directory and returns a @flake-parts module whose effect is ```nix { imports = [ ...every discovered .nix... ]; }```.
+
+@flake-parts loads that list with: ```nix lib.evalModules { class = "flake"; ... }```, so all discovered files merge into one @nix-module[Nix module system].
+
+#block(breakable: false)[
+  Adding a new module or configuration means creating a `.nix` file anywhere inside `modules/*`; there are no @import-list:pl or @barrel-file:pl to maintain.
+
+  // #raw(read("examples/modules/nixpkgs/base-defaults.nix"), lang: "nix", block: true)
+]
+
+=== Excluded .nix files <sec:excluded-nix-files>
+In rare circumstances where you don't want `*.nix` files under `./modules` to be implicitly loaded as @flake-module[`flake-modules`], we recommend the operator to follow naming conventions where `_*.nix` already automatically gets skipped by @import-tree[`import-tree`].
+
+For cases where `.nix` files—for usability outside a @flake-module pattern—use top-root directories outside of `./modules` instead, such as `./lib`, or wherever is most applicable.
+
+#block(breakable: false)[
+  === References as initial originators of @dendritic-pattern[dendritic patterns]
+  This is a non-exhaustive list of the posts, repositories and discussions where the @dendritic-pattern where first established [_sic_].
+
+  #cite_atyp(<dendritic-implementation>)
+
+  #cite_atyp(<refactoring-my-infrastructure-as-code-configurations>)
+
+  #cite_atyp(<the-dendritic-pattern>)
 ]
 
