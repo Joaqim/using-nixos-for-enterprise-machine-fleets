@@ -37,8 +37,8 @@ import-list:
 module:
   short: module
   description: Refers to NixOS-, home-manager- or flake modules
-nix-module-system:
-  short: nix module system
+nix-module:
+  short: nix module
   description: Allows for declarative configuration where multiple modules can be evaluated to create a full system configuration.
 flake-parts:
   short: flake-parts
@@ -49,9 +49,18 @@ flake-nix:
 flake:
   short: flake
   description: Provides a standard way to write Nix expressions whose dependencies are version-pinned in a lock file, improving reproducibility.
+flake-input:
+  short: flake input
+  description: Is a Nix dependency defined in flake.nix and pinned by flake.lock for reproducibility.
+flake-output:
+  short: flake output
+  description: Is the various flake artifacts produced by evaluation or building of a flake. This can include Nix packages, applications and NixOS configurations.
 flake-module:
   short: flake-module
   description: A feature of using `flake-parts`, allows for writing reusable and extensible modules that act on flakes.
+per-system:
+  short: per-system
+  description: Deliniated configurations, packages, applications and features based on system architecture of target for a specific module.
 import-tree:
   short: import-tree
   description: A function that recursively imports Nix files from a directory tree.
@@ -61,15 +70,18 @@ per-host:
 nixos-conf:
   short: NixOS configuration
   description: Using Nix and Nixpkgs to achieve a declarative model to manage system deployments.
+home-manager:
+  short: home-manager
+  description: An extension to NixOS that allows for declarative control on a per-user basis, rather than at system level.
 hm-conf:
   short: home-manager configuration
-  description: An extension to NixOS that allows for declarative control on a per-user basis, rather than at system level.
+  description: Is a declarative per-user NixOS configuration, as opposed to per-host.
 dendritic-pattern:
   short: dendritic pattern
   description: A Nix module system usage pattern
 llm-assisted:
   short: LLM-assisted
-  description: Usage of LLM to auto-complete code. Extent of usage can vary, see `vibe-coding`
+  description: Usage of LLM to auto-complete code. Extent of usage can vary.
   see: vibe-coding
 llm:
   short: LLM
@@ -105,3 +117,9 @@ deferred-module-composition:
 nix:
   short: nix
   description: Is a cross-platform package-manager for Unix-like systems and a functional programming language for those systems.
+darwin:
+  short: darwin
+  description: Refers to a project that allows for usin NixOS's declarative configuration for MacOS systems using the Nix package manager.
+macos:
+  short: macOS
+  description: is a proprietary Unix operating system which has been marketed and developed by Apple since 2001.

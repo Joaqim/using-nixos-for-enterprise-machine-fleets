@@ -69,7 +69,7 @@ bearing @docker[docker instances] running somewhere independently of the network
   #pagebreak()
   = Nix module system <sec:nix-modules>
 
-  For a simple introduction to @nix-module-system, see: #cite_title(<nixdev:a-basic-module>)
+  For a simple introduction to @nix-module[Nix module system], see: #cite_title(<nixdev:a-basic-module>)
 
   /* Description of Nix module system with common patterns */
   #quote(attribution: [#cite_atyp(<nixdev:a-basic-module>)])[
@@ -81,7 +81,7 @@ bearing @docker[docker instances] running somewhere independently of the network
   {
   }
   ```
-  For the purposes of this paper, a @flake-module would then look like:
+  For the purposes of this paper, @flake-module:pl can look like this:
   ```nix
   { ... }: {
     flake.modules.nixos.my-module = { ... } = {
