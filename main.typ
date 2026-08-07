@@ -64,117 +64,115 @@ bearing @docker[docker instances] running somewhere independently of the network
   cite_software(<NixOS>),
 ) #cite_a(<wiki:NixOS>)
 
-#[
-  #set page(columns: 1)
-  #pagebreak()
-  = Nix module system <sec:nix-modules>
+#pagebreak()
+= Nix module system <sec:nix-modules>
 
-  For a simple introduction to @nix-module[Nix module system], see: #cite_title(<nixdev:a-basic-module>)
+For a simple introduction to @nix-module[Nix module system], see: #cite_title(<nixdev:a-basic-module>)
 
-  /* Description of Nix module system with common patterns */
-  #quote(attribution: [#cite_atyp(<nixdev:a-basic-module>)])[
-    The simplest possible module is a function that takes any attributes and returns an empty attribute set:
-  ]
+/* Description of Nix module system with common patterns */
+#quote(attribution: <nixdev:a-basic-module>)[
+  The simplest possible module is a function that takes any attributes and returns an empty attribute set:
+]
 
-  ```nix
-  { ... }:
+```nix
+{ ... }:
+{
+}
+```
+For the purposes of this paper, @flake-module:pl can look like this:
+```nix
+{ ... }: {
+  # A NixOS module for a custom systemd service
+  flake.modules.nixos.my-service = { config, lib, ... }:
+    let
+      cfg = config.services.my-service;
+    in
   {
-  }
-  ```
-  For the purposes of this paper, @flake-module:pl can look like this:
-  ```nix
-  { ... }: {
-    # A NixOS module for a custom systemd service
-    flake.modules.nixos.my-service = { config, lib, ... }:
-      let
-        cfg = config.services.my-service;
-      in
-    {
-      options.services.my-service = {
-        enable = lib.mkEnableOption "my custom service";
-      };
-      config = lib.mkIf cfg.enable {
-        systemd.user.services.my-service = {
-          description = "my custom service";
-          wantedBy = [ "default.target" ];
-          serviceConfig.ExecStart = lib.getExe pkgs.my-package;
-        };
+    options.services.my-service = {
+      enable = lib.mkEnableOption "my custom service";
+    };
+    config = lib.mkIf cfg.enable {
+      systemd.user.services.my-service = {
+        description = "my custom service";
+        wantedBy = [ "default.target" ];
+        serviceConfig.ExecStart = lib.getExe pkgs.my-package;
       };
     };
+  };
+```
+#zebraw(numbering: false)[
+  A @darwin (@macos) @module—out of scope for this paper.
+  ```nix
+    {...}: {
+      flake.modules.darwin.my-module = { ... }: {
+      };
+    }
   ```
-  #zebraw(numbering: false)[
-    A @darwin (@macos) @module—out of scope for this paper.
-    ```nix
-      {...}: {
-        flake.modules.darwin.my-module = { ... }: {
-        };
-      }
-    ```
-    A @home-manager @module
-    ```nix
-      {...}: {
-        flake.modules.home.my-module = { ... }: {
-        };
-      }
-    ```
-    A @flake-module
-    ```nix
-      {...}: {
-        # A flake module
-        flake.modules.flake.my-module = { ... }: {
-        };
-      }
-    ```
-  ]
-
-  The naming choice should be driven by aspect rather than conforming to established patterns, see @deferred-module-composition.
-
-  #block(breakable: false)[
-    For more in-depth guides:
-    - #cite_t(<nixdev:a-basic-module>)
-    - #cite_t(<nlewo:nixos-manual:writing-nixos-modules>)
-  ]
-
-  == Project structure
-
-  We utilize @dendritic-pattern and @flake-parts with @flake-module:pl, see @sec:dendritic-pattern.
-
-  Naming and folder structure conventions are wholly up to the operator as @import-tree is not distriminatory; any `.nix` file under assigned import directory will be implicitly supported, unless otherwise excluded, see @sec:excluded-nix-files.
-
-  We recommend using nix-idiomatic `default.nix` and sub-folder structures in direct relation with @flake-module patterns.
-
-  @nix draws no distinction between unquoted and quoted attributes;
-  `flake.modules.<class>.<name>` and `flake.modules.<class>."<name>"` are equivalent.
-
-  We recommend using quoted attributes where the attribute root would be semantically equivalent to `flake.modules.class."<name>".name = "<name>"`, see `"user1"` in examples below.
-
-  #zebraw(numbering: false)[
-    ```nix
-     # modules/nixos/gnome/default.nix
-     flake.modules.nixos.gnome = {config, ... }:
-      config = {
-        services.desktopManager.gnome.enable = true;
-        services.displayManager.gdm.enable = true;
+  A @home-manager @module
+  ```nix
+    {...}: {
+      flake.modules.home.my-module = { ... }: {
       };
-     };
-     # modules/home/gnome/default.nix
-     flake.modules.homeManager.gnome = {config, ... }: {
-       config.gnome.enable = true;
-     };
-     # modules/home/users/user1/gnome.nix
-     flake.modules.homeManager.users."user1" = {config, ... }: {
-      config.dconf.settings = {
-        "org/gnome/desktop/media-handling" = {
-          automount = false;
-          automount-open = false;
-        };
+    }
+  ```
+  A @flake-module
+  ```nix
+    {...}: {
+      # A flake module
+      flake.modules.flake.my-module = { ... }: {
       };
-     };
-    ```
-  ]
+    }
+  ```
+]
 
-  #pagebreak()
+The naming choice should be driven by aspect rather than conforming to
+established patterns, see @sec:deferred-module-composition.
 
+#block(breakable: false)[
+  For more in-depth guides:
+  - #cite_t(<nixdev:a-basic-module>)
+  - #cite_t(<nlewo:nixos-manual:writing-nixos-modules>)
+]
+
+== Project structure
+
+We utilize @dendritic-pattern and @flake-parts with @flake-module:pl, see @sec:dendritic-pattern.
+
+Naming and folder structure conventions are wholly up to the operator as @import-tree is not distriminatory; any `.nix` file under assigned import directory will be implicitly supported, unless otherwise excluded, see @sec:excluded-nix-files.
+
+We recommend using nix-idiomatic `default.nix` and sub-folder structures in direct relation with @flake-module patterns.
+
+@nix draws no distinction between unquoted and quoted attributes;
+`flake.modules.<class>.<name>` and `flake.modules.<class>."<name>"` are equivalent.
+
+We recommend using quoted attributes where the attribute root would be semantically equivalent to `flake.modules.class."<name>".name = "<name>"`, see `"user1"` in examples below.
+
+#zebraw(numbering: false)[
+  ```nix
+   # modules/nixos/gnome/default.nix
+   flake.modules.nixos.gnome = {config, ... }:
+    config = {
+      services.desktopManager.gnome.enable = true;
+      services.displayManager.gdm.enable = true;
+    };
+   };
+   # modules/home/gnome/default.nix
+   flake.modules.homeManager.gnome = {config, ... }: {
+     config.gnome.enable = true;
+   };
+   # modules/home/users/user1/gnome.nix
+   flake.modules.homeManager.users."user1" = {config, ... }: {
+    config.dconf.settings = {
+      "org/gnome/desktop/media-handling" = {
+        automount = false;
+        automount-open = false;
+      };
+    };
+   };
+  ```
+]
+
+#block(breakable: false)[
   This is a minimally viable `modules.nixos` definition, using externally defined @nix-module, which is a @flake-input:
   ```nix
   { inputs, ... }:
@@ -233,6 +231,55 @@ And for @per-host inclusion:
   }
   ```,
 ) <code:host-desktop>
+
+#pagebreak()
+
+=== Deferred module composition <sec:deferred-module-composition>
+
+Deferred—as in, not instantiated—Nix module, is a pattern where the declaration
+of Nix modules are primarily driven by intent, any abstractions are driven by
+aspect, rather than form-fitting structure.
+
+#info[
+  The following section is attributed to #cite_a(<vanixiets:flake-parts>) but
+  contains—or is wholly written by—an LLM; no reasonable expectaction by the
+  original author of citation or attribution.
+]
+
+The `flake.modules` option creates a conventional namespace for publishing
+deferred modules that can be consumed by other configurations (NixOS,
+nix-darwin, home-manager). This enables flakes to export modules as reusable
+components.
+
+```nix
+{ ... }:
+{
+  flake.modules.nixos.my-service = { config, lib, pkgs, ... }: {
+    options.services.my-service.enable = lib.mkEnableOption "my service";
+    config = lib.mkIf config.services.my-service.enable {
+      systemd.services.my-service = { /* ... */ };
+    };
+  };
+}
+```
+
+Consumers can then import these modules in their own configurations:
+
+```nix
+{
+  inputs.our-flake.url = "github:org/repo";
+  outputs = { nixpkgs, our-flake, ... }: {
+    nixosConfigurations.host = nixpkgs.lib.nixosSystem {
+      modules = [
+        our-flake.modules.nixos.my-service
+        { services.my-service.enable = true; }
+      ];
+    };
+  };
+}
+```
+
+The namespace structure is `flake.modules.<class>.<name>` where `class` identifies the module system context (nixos, darwin, homeManager, clan, generic, flake,) and `name` is the module identifier.
 
 === File tree example <sec:file-tree-example>
 
@@ -430,38 +477,6 @@ Flake-parts automatically evaluates this module for each system listed in the `s
 
 ==== The flake.modules namespace
 
-The `flake.modules` option creates a conventional namespace for publishing deferred modules that can be consumed by other configurations (NixOS, nix-darwin, home-manager).
-This enables flakes to export modules as reusable components.
-
-```nix
-{ ... }:
-{
-  flake.modules.nixos.my-service = { config, lib, pkgs, ... }: {
-    options.services.my-service.enable = lib.mkEnableOption "my service";
-    config = lib.mkIf config.services.my-service.enable {
-      systemd.services.my-service = { /* ... */ };
-    };
-  };
-}
-```
-
-Consumers can then import these modules in their own configurations:
-
-```nix
-{
-  inputs.our-flake.url = "github:org/repo";
-  outputs = { nixpkgs, our-flake, ... }: {
-    nixosConfigurations.host = nixpkgs.lib.nixosSystem {
-      modules = [
-        our-flake.modules.nixos.my-service
-        { services.my-service.enable = true; }
-      ];
-    };
-  };
-}
-```
-
-The namespace structure is `flake.modules.<class>.<name>` where `class` identifies the module system context (nixos, darwin, homeManager, generic, flake) and `name` is the module identifier.
 
 ==== Automatic transposition
 
@@ -530,20 +545,23 @@ The transposition module then merges these configurations into the top-level fla
 Module classes prevent accidental mixing of modules from incompatible contexts.
 The nixpkgs module system supports classes via the `class` parameter to `evalModules` and the `_class` module attribute.
 
-Flake-parts uses two primary module classes:
+#block(breakable: false)[
+  Flake-parts uses two primary module classes:
 
-- *`"flake"`* - Top-level flake-parts modules that define `flake`, `perSystem`, `systems` options
-- *`"perSystem"`* - Per-system modules evaluated with specific system context
+  - *`"flake"`* - Top-level flake-parts modules that define `flake`, `perSystem`, `systems` options
+  - *`"perSystem"`* - Per-system modules evaluated with specific system context
 
-The `flake.modules` namespace supports publishing modules for external classes:
+  The `flake.modules` namespace supports publishing modules for external classes:
 
-- *`nixos`* - NixOS system modules
-- *`darwin`* - nix-darwin system modules
-- *`homeManager`* - home-manager user modules
-- *`generic`* - Class-agnostic modules that work in any context
-- *`flake`* - Nested flake-parts modules
+  - *`nixos`* - NixOS system modules
+  - *`darwin`* - nix-darwin system modules
+  - *`homeManager`* - home-manager user modules
+  - *`generic`* - Class-agnostic modules that work in any context
+  - *`flake`* - Nested flake-parts modules
 
-When you define `flake.modules.nixos.my-module`, flake-parts automatically wraps it with `_class = "nixos"` metadata to ensure type safety.
+  When you define `flake.modules.nixos.my-module`, flake-parts automatically
+  wraps it with `_class = "nixos"` metadata to ensure type safety.
+]
 
 === The deferredModule type
 
