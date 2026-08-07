@@ -42,7 +42,7 @@ nix-module:
   description: Allows for declarative configuration where multiple modules can be evaluated to create a full system configuration.
 flake-parts:
   short: flake-parts
-  description: A minimal framework that allows for greater module flexibility using "flake modules", on step removed from ordinary nix modules.
+  description: A minimal framework that allows for greater module flexibility using "flake modules", one step removed from ordinary nix modules.
 flake-nix:
   short: flake.nix
   description: Provides a uniform structure for Nix projects, defining external inputs and internal outputs.
@@ -54,7 +54,7 @@ flake-input:
   description: Is a Nix dependency defined in flake.nix and pinned by flake.lock for reproducibility.
 flake-output:
   short: flake output
-  description: Is the various flake artifacts produced by evaluation or building of a flake. This can include Nix packages, applications and NixOS configurations.
+  description: Is the various flake artifacts produced by evaluation or building of a flake. This can include Nix packages, applications and NixOS/home-manager/clan configurations.
 flake-module:
   short: flake-module
   description: A feature of using `flake-parts`, allows for writing reusable and extensible modules that act on flakes.
